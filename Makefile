@@ -3,8 +3,10 @@ CXX=g++
 CXXFLAGS=-g3 -O2 -march=native -m32 -std=c++11
 CXXLIBS=-lncurses
 
-OBJECTS=entry.o
+HEADERS=object.h screen.h map.h
+OBJECTS=entry.o screen.o map.o
 SOURCE=$(subst .o,.cpp,$(OBJECTS))
+
 
 .PHONY: clean run
 
@@ -20,6 +22,7 @@ run: $(PROJECT)
 $(PROJECT): $(OBJECTS)
 	$(CXX) $(CXXFLAGS) -o $@ $^ $(CXXLIBS)
 
+%.o: $(HEADERS)
 %.o: %.cpp
 	$(CXX) -c $(CXXFLAGS) -o $@ $<
 

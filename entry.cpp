@@ -1,65 +1,61 @@
-#include <cstdlib>
-#include <cstdint>
-#include <cstdio>
-#include <clocale>
-#include <ncurses.h>
+#include "screen.h"
+#include "map.h"
 
-struct object_t {
-  int x;
-  int y;
-};
-
-object_t world;
 object_t player;
 
+void init() {
+  scrInit();
+  mapInit();
 
-int init() {
-  setlocale(LC_ALL, "");
-
-  initscr();
-  halfdelay(1);
-  noecho();
-  nonl();
-  intrflush(stdscr, FALSE);
-  keypad(stdscr, TRUE);
-  curs_set(0);
-
-  int maxx = 0;
-  int maxy = 0;
-
-  getmaxyx(stdscr, maxy, maxx);
-
-  world.x = maxx - 1;
-  world.y = maxy - 1;
-
-  player.x = world.x / 2;
-  player.y = world.y / 2;
+  player.pos.x = world.x / 2;
+  player.pos.y = world.y / 2;
 }
 
 void cleanup(){
-  endwin();
+  mapCleanup();
+  scrCleanup();
 }
 
 int input() {
     switch (getch()){
     case KEY_DOWN:
-      if (player.y < world.y){
-        player.y += 1;
+      if (player.pos.y < map.sz.y - 1){
+        player.pos.y += 1;
       }
       break;
     case KEY_UP:
-      if (player.y > 0){
-        player.y -= 1;
+      if (player.pos.y > 0){
+        player.pos.y -= 1;
       }
       break;
     case KEY_LEFT:
-      if (player.x > 0){
-        player.x -= 1;
+      if (player.pos.x > 0){
+        player.pos.x -= 1;
       }
       break;
     case KEY_RIGHT:
-      if (player.x < world.x){
-        player.x += 1;
+      if (player.pos.x < map.sz.x - 1){
+        player.pos.x += 1;
+      }
+      break;
+    case 'w':
+      if (map.off.y > 0){
+        map.off.y -= 1;
+      }
+      break;
+    case 's':
+      if (map.sz.y - map.off.y > world.y + 1){
+        map.off.y += 1;
+      }
+      break;
+    case 'a':
+      if (map.off.x > 0){
+        map.off.x -= 1;
+      }
+      break;
+    case 'd':
+      if (map.sz.x - map.off.x > world.x + 1){
+        map.off.x += 1;
       }
       break;
     case KEY_END:
@@ -70,7 +66,15 @@ int input() {
 
 void draw(){
     erase();
-    mvaddch(player.y, player.x, '@');
+    mapDraw();
+    if (  (player.pos.x - map.off.x >= 0)
+       && (player.pos.y - map.off.y >= 0)
+       && (player.pos.x - map.off.x <= world.x)
+       && (player.pos.y - map.off.y <= world.y)){
+      mvaddch(player.pos.y - map.off.y, player.pos.x - map.off.x, '@');
+    }
+
+    mvprintw(0, 0, "[%d, %d]", player.pos.x, player.pos.y);
     refresh();
 }
 

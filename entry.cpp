@@ -1,96 +1,54 @@
 #include "screen.h"
 #include "map.h"
 #include "clock.h"
+#include "player.h"
+#include "config.h"
 
-object_t player;
-
-#define ZOMBIE_COUNT (50)
-
-object_t zombie[ZOMBIE_COUNT];
+object_t* actor = 0;
+int actorCount = 1;
 
 void init() {
   scrInit();
   mapInit();
+  configInit();
   clockStart();
 
-  player.pos.x = world.x / 2;
-  player.pos.y = world.y / 2;
-  player.smb = '@';
+  const char* cntKey = configKey("TOTAL_ACTORS");
+  if (cntKey != 0){
+    actorCount = atoi(cntKey);
+  }
+  actor = (object_t*)calloc(actorCount, sizeof(object_t));
 
-  for (int i = 0; i < ZOMBIE_COUNT; ++i)
+  player = actor;
+
+  player->pos.x = world.x / 2;
+  player->pos.y = world.y / 2;
+  player->smb = '@';
+
+  for (int i = 1; i < actorCount; ++i)
   {
-    zombie[i].pos.x = rand()%map.sz.x;
-    zombie[i].pos.y = rand()%map.sz.y;
-    zombie[i].smb = 'Z';
+    actor[i].pos.x = rand()%map.sz.x;
+    actor[i].pos.y = rand()%map.sz.y;
+    actor[i].smb = 'Z';
   }
 
 }
 
 void cleanup(){
+  free(actor);
   mapCleanup();
   scrCleanup();
 }
 
-int key2side(int key){
-  switch (key){
-  case KEY_UP:
-    return SIDE_TOP;
-  case KEY_DOWN:
-    return SIDE_BOTTOM;
-  case KEY_LEFT:
-    return SIDE_LEFT;
-  case KEY_RIGHT:
-    return SIDE_RIGHT;
-  case KEY_A1:
-    return SIDE_LEFT_TOP;
-  case KEY_A3:
-    return SIDE_RIGHT_TOP;
-  case KEY_C1:
-    return SIDE_LEFT_BOTTOM;
-  case KEY_C3:
-    return SIDE_RIGHT_BOTTOM;
-  }
-}
-
 int input() {
     int smb = getch();
+    if (playerControl(smb)){
+      return 1;
+    }
+    if (mapControl(smb)){
+      return 1;
+    }
     switch (smb){
-    case KEY_UP:
-    case KEY_DOWN:
-    case KEY_LEFT:
-    case KEY_RIGHT:
-    case KEY_A1:
-    case KEY_A3:
-    case KEY_C1:
-    case KEY_C3:
-      {
-        int side = key2side(smb);
-        if (mapCanPass(player.pos, side)){
-          player.pos.x += sides[side].x;
-          player.pos.y += sides[side].y;
-        }
-        break;
-      }
-    case 'w':
-      if (map.off.y > 0){
-        map.off.y -= 1;
-      }
-      break;
-    case 's':
-      if (map.sz.y - map.off.y > world.y + 1){
-        map.off.y += 1;
-      }
-      break;
-    case 'a':
-      if (map.off.x > 0){
-        map.off.x -= 1;
-      }
-      break;
-    case 'd':
-      if (map.sz.x - map.off.x > world.x + 1){
-        map.off.x += 1;
-      }
-      break;
     case KEY_END:
       return 0;
     }
@@ -99,43 +57,36 @@ int input() {
 
 void draw(){
     erase();
-    mapHeatAdd(5.0f, player.pos);
+    mapHeatAdd(5.0f, player->pos);
     mapDraw();
-    if (  (player.pos.x - map.off.x >= 0)
-       && (player.pos.y - map.off.y >= 0)
-       && (player.pos.x - map.off.x <= world.x)
-       && (player.pos.y - map.off.y <= world.y)){
-      mvaddch(player.pos.y - map.off.y, player.pos.x - map.off.x, '@');
-    }
-
-    for (int i = 0; i < ZOMBIE_COUNT; ++i)
+    for (int i = 0; i < actorCount; ++i)
     {
-      if (  (zombie[i].pos.x - map.off.x >= 0)
-         && (zombie[i].pos.y - map.off.y >= 0)
-         && (zombie[i].pos.x - map.off.x <= world.x)
-         && (zombie[i].pos.y - map.off.y <= world.y)){
-        mvaddch(zombie[i].pos.y - map.off.y, zombie[i].pos.x - map.off.x, zombie[i].smb);
+      if (  (actor[i].pos.x - map.off.x >= 0)
+         && (actor[i].pos.y - map.off.y >= 0)
+         && (actor[i].pos.x - map.off.x <= world.x)
+         && (actor[i].pos.y - map.off.y <= world.y)){
+        mvaddch(actor[i].pos.y - map.off.y, actor[i].pos.x - map.off.x, actor[i].smb);
       }
     }
     refresh();
 }
 
 void update(){
-  for (int i = 0; i < ZOMBIE_COUNT; ++i)
+  for (int i = 1; i < actorCount; ++i)
   {
     float dist = 1.0e9f;
     int bsd = 10;
     for (int sd = 0; sd < SIDE_COUNT; ++sd){
-      if (mapCanPass(zombie[i].pos, sd)){
-        float tdst = mapHeat(zombie[i].pos.x + sides[sd].x , zombie[i].pos.y + sides[sd].y);
+      if (mapCanPass(actor[i].pos, sd)){
+        float tdst = mapHeat(actor[i].pos.x + sides[sd].x , actor[i].pos.y + sides[sd].y);
         if (tdst < dist){
           dist = tdst;
           bsd = sd;
         }
       }
     }
-    zombie[i].pos.x += sides[bsd].x;
-    zombie[i].pos.y += sides[bsd].y;
+    actor[i].pos.x += sides[bsd].x;
+    actor[i].pos.y += sides[bsd].y;
   }
 }
 

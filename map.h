@@ -48,3 +48,5 @@ extern coord_t sides[SIDE_COUNT];
 
 bool mapInside(const coord_t& crd);
 bool mapCanPass(const coord_t& crd, int sd);
+
+bool mapControl(int key);

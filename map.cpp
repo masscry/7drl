@@ -185,3 +185,33 @@ void mapHeatDebug(FILE* output){
   }
   fprintf(output, "===");
 }
+
+bool mapControl(int key){
+  switch(key){
+    case 'w':
+    case 'W':
+      if (map.off.y > 0){
+        map.off.y -= 1;
+      }
+      return true;
+    case 's':
+    case 'S':
+      if (map.sz.y - map.off.y > world.y + 1){
+        map.off.y += 1;
+      }
+      return true;
+    case 'a':
+    case 'A':
+      if (map.off.x > 0){
+        map.off.x -= 1;
+      }
+      return true;
+    case 'd':
+    case 'D':
+      if (map.sz.x - map.off.x > world.x + 1){
+        map.off.x += 1;
+      }
+      return true;
+  }
+  return false;
+}

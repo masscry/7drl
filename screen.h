@@ -27,3 +27,5 @@ void scrInit();
 void scrCleanup();
 
 extern coord_t world;
+
+void bline(const coord_t& s, const coord_t& f, void (*callback)(coord_t, void*), void* ptr);

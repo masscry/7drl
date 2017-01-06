@@ -39,6 +39,11 @@ float& mapHeat(int x, int y){
 
 char grass[] = {'.', '\'', ' ', '"', ' ', ' ', '.', '#'};
 
+static void mapWall(coord_t crd, void*){
+  object_t& cl = mapObject(crd.x,crd.y);
+  cl.smb = '#';
+}
+
 void mapInit(){
   map.sz.x = world.x*2;
   map.sz.y = world.y*2 + 1;
@@ -59,6 +64,7 @@ void mapInit(){
       cl.smb = grass[rand()%8];
     }
   }
+
 }
 
 void mapCleanup(){

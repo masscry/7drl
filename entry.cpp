@@ -93,7 +93,9 @@ void update(){
 int main(int argc, char* argv[]){
   init();
   do{
-    update();
+    if (gameMode == GM_WALK){
+      update();
+    }
     draw();
   }while(input());
   cleanup();

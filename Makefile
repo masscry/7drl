@@ -1,10 +1,10 @@
 PROJECT=7drl
 CXX=g++
-CXXFLAGS=-g3 -O2 -march=native -m32 -std=c++11
+CXXFLAGS=-g3 -march=native -m32 -std=c++11
 CXXLIBS=-lncurses
 
-HEADERS=object.h screen.h map.h
-OBJECTS=entry.o screen.o map.o
+HEADERS=object.h screen.h map.h clock.h
+OBJECTS=entry.o screen.o map.o clock.o
 SOURCE=$(subst .o,.cpp,$(OBJECTS))
 
 

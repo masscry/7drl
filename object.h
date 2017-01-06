@@ -1,3 +1,8 @@
+/**
+ * @file object.h
+ *
+ * Common structures.
+ */
 #pragma once
 
 struct coord_t {
@@ -10,3 +15,4 @@ struct object_t {
   char smb;
 };
 
+float dist(const coord_t& a, const coord_t& b);

@@ -1,12 +1,14 @@
 #include "screen.h"
 
+#include <cmath>
+
 coord_t world;
 
 void scrInit() {
   setlocale(LC_ALL, "");
 
   initscr();
-  halfdelay(1);
+  cbreak();
   noecho();
   nonl();
   intrflush(stdscr, FALSE);
@@ -25,4 +27,8 @@ void scrInit() {
 
 void scrCleanup() {
   endwin();
+}
+
+float dist(const coord_t& a, const coord_t& b){
+  return sqrtf((a.x-b.x)*(a.x-b.x) + (a.y-b.y)*(a.y-b.y));
 }

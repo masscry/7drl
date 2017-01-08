@@ -11,7 +11,6 @@ int actorCount = 1;
 int run = 1;
 
 void init() {
-  errorInit();
   scrInit();
   mapInit();
   configInit();
@@ -52,7 +51,6 @@ void cleanup(){
   free(actor);
   mapCleanup();
   scrCleanup();
-  errorCleanup();
 }
 
 void draw(){

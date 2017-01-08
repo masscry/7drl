@@ -1,10 +1,10 @@
 #include "map.h"
 #include "screen.h"
 #include "clock.h"
+#include "error.h"
 
 #include <cctype>
 #include <cmath>
-#include <cassert>
 #include <queue>
 #include <vector>
 #include <cstring>
@@ -22,22 +22,30 @@ T max (T a, T b){
 map_t map;
 
 object_t& mapObject(int x, int y){
-  assert(x >= 0);
-  assert(y >= 0);
-  assert(x < map.sz.x);
-  assert(y < map.sz.y);
+  EXPECT(x >= 0);
+  EXPECT(y >= 0);
+  EXPECT(x < map.sz.x);
+  EXPECT(y < map.sz.y);
   return map.cl[y * map.sz.x + x];
 }
 
 float& mapHeat(int x, int y){
-  assert(x >= 0);
-  assert(y >= 0);
-  assert(x < map.sz.x);
-  assert(y < map.sz.y);
+  EXPECT(x >= 0);
+  EXPECT(y >= 0);
+  EXPECT(x < map.sz.x);
+  EXPECT(y < map.sz.y);
   return map.heat[y * map.sz.x + x];
 }
 
-char grass[] = {'.', '\'', ' ', '"', ' ', ' ', '.', '#'};
+char grass[] =    {   '.',   '\'',    ' ',    '"',    ' ',    ' ',    '.',   '#'};
+chtype  grasscol[] = {COLOR_PAIR(CGRASS),
+                   COLOR_PAIR(CGRASS),
+                   COLOR_PAIR(CGRASS),
+                   COLOR_PAIR(CGRASS),
+                   COLOR_PAIR(CGRASS),
+                   COLOR_PAIR(CGRASS),
+                   COLOR_PAIR(CGRASS),
+                   COLOR_PAIR(CWALL)};
 
 static void mapWall(coord_t crd, void*){
   object_t& cl = mapObject(crd.x,crd.y);
@@ -61,7 +69,9 @@ void mapInit(){
       ht = 0.0f;
       cl.pos.x = x;
       cl.pos.y = y;
-      cl.smb = grass[rand()%8];
+      int rnd = rand()%8;
+      cl.smb = grass[rnd];
+      cl.col = grasscol[rnd];
     }
   }
 
@@ -71,14 +81,16 @@ void mapCleanup(){
   free(map.cl);
 }
 
-void mapDraw(){
+void mapDraw(const object_t* center, float cdist){
   int fx = min(map.sz.x - map.off.x, world.x + 1);
   int fy = min(map.sz.y - map.off.y, world.y + 1);
 
   for (int y = 0; y < fy; ++y){
     for (int x = 0; x < fx; ++x){
       object_t& obj = mapObject(x + map.off.x, y + map.off.y);
-      mvaddch(y, x, obj.smb);
+      if (dist(center->pos, obj.pos) <= cdist){
+        mvaddch(y, x, obj.smb | obj.col);
+      }
     }
   }
 
@@ -111,10 +123,10 @@ bool mapInside(const coord_t& crd){
 }
 
 bool mapCanPass(const coord_t& crd, int sd){
-  assert(crd.x >= 0);
-  assert(crd.y >= 0);
-  assert(crd.x < map.sz.x);
-  assert(crd.y < map.sz.y);
+  EXPECT(crd.x >= 0);
+  EXPECT(crd.y >= 0);
+  EXPECT(crd.x < map.sz.x);
+  EXPECT(crd.y < map.sz.y);
 
   if (crd.x + sides[sd].x < 0 ){
     return false;
@@ -137,6 +149,12 @@ bool mapCanPass(const coord_t& crd, int sd){
     return false;
   }
 
+  if (dst.top != 0){
+    if (dst.top->smb == 'Z'){
+      return false;
+    }
+  }
+
   if (sidecost[sd] > 1.0f){
     object_t& ds1 = mapObject(crd.x + sides[sd].x, crd.y);
     object_t& ds2 = mapObject(crd.x, crd.y + sides[sd].y);
@@ -147,10 +165,10 @@ bool mapCanPass(const coord_t& crd, int sd){
 }
 
 void mapHeatAdd(float val, coord_t crd){
-  assert(crd.x >= 0);
-  assert(crd.y >= 0);
-  assert(crd.x < map.sz.x);
-  assert(crd.y < map.sz.y);
+  EXPECT(crd.x >= 0);
+  EXPECT(crd.y >= 0);
+  EXPECT(crd.x < map.sz.x);
+  EXPECT(crd.y < map.sz.y);
 
   std::vector<float> dist;
   dist.resize(map.sz.x*map.sz.y, 1.0e9f);
@@ -220,4 +238,25 @@ bool mapControl(int key){
       return true;
   }
   return false;
+}
+
+static bool mapInsideScreen(const coord_t& pos){
+  return    (pos.x - map.off.x >= 0)
+         && (pos.y - map.off.y >= 0)
+         && (pos.x - map.off.x <= world.x)
+         && (pos.y - map.off.y <= world.y);
+}
+
+void mapDrawActors(object_t* act, size_t actlen){
+  for (int i = 0; i < actlen; ++i){
+    if (mapInsideScreen(act[i].pos)){
+      mvaddch(act[i].pos.y - map.off.y, act[i].pos.x - map.off.x, act[i].smb | act[i].col);
+    }
+  }
+}
+
+void mapHeatObjects(object_t* act, size_t actlen){
+  for (int i = 0; i < actlen; ++i){
+    mapHeat(act[i].pos.x, act[i].pos.y) += 1.0f;
+  }
 }

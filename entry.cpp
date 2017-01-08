@@ -4,12 +4,14 @@
 #include "player.h"
 #include "config.h"
 #include "action.h"
+#include "error.h"
 
 object_t* actor = 0;
 int actorCount = 1;
 int run = 1;
 
 void init() {
+  errorInit();
   scrInit();
   mapInit();
   configInit();
@@ -24,17 +26,23 @@ void init() {
 
   object_t* player = actor;
 
+  player->top = 0;
   player->pos.x = world.x / 2;
   player->pos.y = world.y / 2;
   player->smb = '@';
+  player->col = COLOR_PAIR(CPLAYER) | A_BOLD;
   actionRegister(player, 1.0f, playerUpdate);
 
   for (int i = 1; i < actorCount; ++i)
   {
+    actor[i].top = 0;
     actor[i].pos.x = rand()%map.sz.x;
     actor[i].pos.y = rand()%map.sz.y;
     actor[i].smb = 'Z';
+    actor[i].col = COLOR_PAIR(CZOMBIE) | A_BOLD;
     actionRegister(actor+i, 0.5f, zombieUpdate);
+    object_t& mcell = mapObject(actor[i].pos.x, actor[i].pos.y);
+    mcell.top = actor+i;
   }
 
 }
@@ -44,21 +52,15 @@ void cleanup(){
   free(actor);
   mapCleanup();
   scrCleanup();
+  errorCleanup();
 }
 
 void draw(){
     erase();
     mapHeatAdd(5.0f, actor->pos);
-    mapDraw();
-    for (int i = 0; i < actorCount; ++i)
-    {
-      if (  (actor[i].pos.x - map.off.x >= 0)
-         && (actor[i].pos.y - map.off.y >= 0)
-         && (actor[i].pos.x - map.off.x <= world.x)
-         && (actor[i].pos.y - map.off.y <= world.y)){
-        mvaddch(actor[i].pos.y - map.off.y, actor[i].pos.x - map.off.x, actor[i].smb);
-      }
-    }
+    mapHeatObjects(actor, actorCount);
+    mapDraw(actor, 10.0f);
+    mapDrawActors(actor, actorCount);
     refresh();
 }
 

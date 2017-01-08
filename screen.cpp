@@ -15,6 +15,12 @@ void scrInit() {
   keypad(stdscr, TRUE);
   curs_set(0);
 
+  start_color();
+  init_pair(CGRASS, COLOR_WHITE, COLOR_GREEN);
+  init_pair(CWALL, COLOR_BLACK, COLOR_GREEN);
+  init_pair(CZOMBIE, COLOR_BLACK, COLOR_GREEN);
+  init_pair(CPLAYER, COLOR_WHITE, COLOR_GREEN);
+
   int maxx = 0;
   int maxy = 0;
 

@@ -1,4 +1,3 @@
-#include <cassert>
 #include "screen.h"
 #include "player.h"
 #include "map.h"
@@ -71,8 +70,20 @@ void zombieUpdate(object_t* zombie){
       }
     }
   }
-  zombie->pos.x += sides[bsd].x;
-  zombie->pos.y += sides[bsd].y;
+
+  if (bsd != 10){
+    {
+      object_t& mocell = mapObject(zombie->pos.x, zombie->pos.y);
+      mocell.top = 0;
+    }
+    zombie->pos.x += sides[bsd].x;
+    zombie->pos.y += sides[bsd].y;
+    {
+      object_t& mocell = mapObject(zombie->pos.x, zombie->pos.y);
+      mocell.top = zombie;
+    }
+  }
+
 }
 
 extern int run;

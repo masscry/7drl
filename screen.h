@@ -29,3 +29,10 @@ void scrCleanup();
 extern coord_t world;
 
 void bline(const coord_t& s, const coord_t& f, void (*callback)(coord_t, void*), void* ptr);
+
+enum {
+  CGRASS = 1,
+  CWALL = 2,
+  CZOMBIE = 3,
+  CPLAYER = 4
+};

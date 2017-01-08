@@ -5,6 +5,8 @@
  */
 #pragma once
 
+#include <ncurses.h>
+
 struct coord_t {
   int x;
   int y;
@@ -12,7 +14,9 @@ struct coord_t {
 
 struct object_t {
   coord_t pos;
-  char smb;
+  chtype smb;
+  chtype col;
+  object_t* top;
 };
 
 float dist(const coord_t& a, const coord_t& b);

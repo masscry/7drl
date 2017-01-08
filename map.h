@@ -22,12 +22,16 @@ extern map_t map;
 
 void mapInit();
 void mapCleanup();
-void mapDraw();
+void mapDraw(const object_t* center, float dist);
+void mapDrawActors(object_t* act, size_t actsize);
 
 object_t& mapObject(int x, int y);
 float& mapHeat(int x, int y);
 
 void mapHeatAdd(float val, coord_t crd);
+void mapHeatObjects(object_t* act, size_t actsize);
+
+
 
 void mapHeatDebug(FILE* output);
 

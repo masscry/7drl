@@ -24,12 +24,10 @@ int key2side(int key){
   }
 }
 
-object_t* player = 0;
-int gameMode = GM_WALK;
+int gameMode = GM_WAIT;
 
 
-bool walkControl(int key){
-  assert(player);
+bool walkControl(int key, object_t* player){
 
   switch(key){
     case KEY_UP:
@@ -52,32 +50,49 @@ bool walkControl(int key){
   return false;
 }
 
-bool aimControl(int key){
-  return false;
+bool playerControl(int key, object_t* player){
+  return walkControl(key, player);
 }
 
-bool playerControl(int key){
+void zombieUpdate(object_t* zombie){
 
-  switch (key){
-    case '`':
-    {
-      switch (gameMode){
-      case GM_WALK:
-        gameMode = GM_AIM;
-        return true;
-      case GM_AIM:
-        gameMode = GM_WALK;
-        return true;
+  if (gameMode != GM_STEP){
+    return;
+  }
+
+  float dist = 1.0e9f;
+  int bsd = 10;
+  for (int sd = 0; sd < SIDE_COUNT; ++sd){
+    if (mapCanPass(zombie->pos, sd)){
+      float tdst = mapHeat(zombie->pos.x + sides[sd].x, zombie->pos.y + sides[sd].y);
+      if (tdst < dist){
+        dist = tdst;
+        bsd = sd;
       }
     }
   }
+  zombie->pos.x += sides[bsd].x;
+  zombie->pos.y += sides[bsd].y;
+}
 
-  switch (gameMode){
-    case GM_WALK:
-      return walkControl(key);
-    case GM_AIM:
-      return aimControl(key);
+extern int run;
+
+int input(object_t* player){
+  int smb = getch();
+  if (playerControl(smb, player)){
+    gameMode = GM_STEP;
+    return 1;
   }
+  if (mapControl(smb)){
+    return 1;
+  }
+  switch(smb){
+  case KEY_END:
+    return 0;
+  }
+  return 1;
+}
 
-  return false;
+void playerUpdate(object_t* plr){
+  run = input(plr);
 }

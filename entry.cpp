@@ -3,14 +3,17 @@
 #include "clock.h"
 #include "player.h"
 #include "config.h"
+#include "action.h"
 
 object_t* actor = 0;
 int actorCount = 1;
+int run = 1;
 
 void init() {
   scrInit();
   mapInit();
   configInit();
+  actionInit();
   clockStart();
 
   const char* cntKey = configKey("TOTAL_ACTORS");
@@ -19,45 +22,33 @@ void init() {
   }
   actor = (object_t*)calloc(actorCount, sizeof(object_t));
 
-  player = actor;
+  object_t* player = actor;
 
   player->pos.x = world.x / 2;
   player->pos.y = world.y / 2;
   player->smb = '@';
+  actionRegister(player, 1.0f, playerUpdate);
 
   for (int i = 1; i < actorCount; ++i)
   {
     actor[i].pos.x = rand()%map.sz.x;
     actor[i].pos.y = rand()%map.sz.y;
     actor[i].smb = 'Z';
+    actionRegister(actor+i, 0.5f, zombieUpdate);
   }
 
 }
 
 void cleanup(){
+  actionCleanup();
   free(actor);
   mapCleanup();
   scrCleanup();
 }
 
-int input() {
-    int smb = getch();
-    if (playerControl(smb)){
-      return 1;
-    }
-    if (mapControl(smb)){
-      return 1;
-    }
-    switch (smb){
-    case KEY_END:
-      return 0;
-    }
-    return 1;
-}
-
 void draw(){
     erase();
-    mapHeatAdd(5.0f, player->pos);
+    mapHeatAdd(5.0f, actor->pos);
     mapDraw();
     for (int i = 0; i < actorCount; ++i)
     {
@@ -71,33 +62,13 @@ void draw(){
     refresh();
 }
 
-void update(){
-  for (int i = 1; i < actorCount; ++i)
-  {
-    float dist = 1.0e9f;
-    int bsd = 10;
-    for (int sd = 0; sd < SIDE_COUNT; ++sd){
-      if (mapCanPass(actor[i].pos, sd)){
-        float tdst = mapHeat(actor[i].pos.x + sides[sd].x , actor[i].pos.y + sides[sd].y);
-        if (tdst < dist){
-          dist = tdst;
-          bsd = sd;
-        }
-      }
-    }
-    actor[i].pos.x += sides[bsd].x;
-    actor[i].pos.y += sides[bsd].y;
-  }
-}
-
 int main(int argc, char* argv[]){
   init();
   do{
-    if (gameMode == GM_WALK){
-      update();
-    }
+    actionLoop();
+    gameMode = GM_WAIT;
     draw();
-  }while(input());
+  }while(run);
   cleanup();
   return 0;
 }

@@ -3,8 +3,8 @@ CXX=g++
 CXXFLAGS=-g3 -march=native -m32 -std=c++11
 CXXLIBS=-lncurses
 
-HEADERS=object.h screen.h map.h clock.h player.h
-OBJECTS=entry.o screen.o map.o clock.o player.o config.o
+HEADERS=object.h screen.h map.h clock.h player.h action.h
+OBJECTS=entry.o screen.o map.o clock.o player.o config.o action.o
 SOURCE=$(subst .o,.cpp,$(OBJECTS))
 
 

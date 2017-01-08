@@ -10,3 +10,12 @@
 
 ## 7 Jan 2017
 
+1. bline function
+2. add aiming
+
+## 8 Jan 2017
+
+1. remove aiming
+2. add new action model
+3. simple distance FOV
+4. better error handling

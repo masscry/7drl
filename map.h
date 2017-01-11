@@ -28,7 +28,7 @@ void mapDrawActors(object_t* act, size_t actsize);
 object_t& mapObject(int x, int y);
 float& mapHeat(int x, int y);
 
-void mapHeatAdd(float val, coord_t crd);
+void mapHeatAdd(coord_t crd, float maxdist);
 void mapHeatObjects(object_t* act, size_t actsize);
 
 

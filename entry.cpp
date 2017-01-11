@@ -55,7 +55,7 @@ void cleanup(){
 
 void draw(){
     erase();
-    mapHeatAdd(5.0f, actor->pos);
+    mapHeatAdd(actor->pos, 5.0f);
     mapHeatObjects(actor, actorCount);
     mapDraw(actor, 10.0f);
     mapDrawActors(actor, actorCount);

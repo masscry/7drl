@@ -88,9 +88,14 @@ void mapDraw(const object_t* center, float cdist){
   for (int y = 0; y < fy; ++y){
     for (int x = 0; x < fx; ++x){
       object_t& obj = mapObject(x + map.off.x, y + map.off.y);
-      if (dist(center->pos, obj.pos) <= cdist){
-        mvaddch(y, x, obj.smb | obj.col);
+      float co = dist(center->pos, obj.pos);
+      //if (co > cdist){
+      //  continue;
+      //}
+      if ( (mapHeat(x + map.off.x, y + map.off.y) - co) >= 0.8f  ){
+        continue;
       }
+      mvaddch(y, x, obj.smb | obj.col);
     }
   }
 
@@ -122,25 +127,18 @@ bool mapInside(const coord_t& crd){
   return (crd.x >= 0) && (crd.y >= 0) && (crd.x < map.sz.x) && (crd.y < map.sz.y);
 }
 
+bool mapInside(const coord_t& crd, int sd){
+  coord_t temp = {crd.x + sides[sd].x, crd.y + sides[sd].y};
+  return mapInside(temp);
+}
+
 bool mapCanPass(const coord_t& crd, int sd){
   EXPECT(crd.x >= 0);
   EXPECT(crd.y >= 0);
   EXPECT(crd.x < map.sz.x);
   EXPECT(crd.y < map.sz.y);
 
-  if (crd.x + sides[sd].x < 0 ){
-    return false;
-  }
-
-  if (crd.x + sides[sd].x >= map.sz.x){
-    return false;
-  }
-
-  if (crd.y + sides[sd].y < 0 ){
-    return false;
-  }
-
-  if (crd.y + sides[sd].y >= map.sz.y){
+  if (!mapInside(crd, sd)){
     return false;
   }
 
@@ -164,7 +162,7 @@ bool mapCanPass(const coord_t& crd, int sd){
   return true;
 }
 
-void mapHeatAdd(float val, coord_t crd){
+void mapHeatAdd(coord_t crd, float maxdist){
   EXPECT(crd.x >= 0);
   EXPECT(crd.y >= 0);
   EXPECT(crd.x < map.sz.x);
@@ -181,16 +179,19 @@ void mapHeatAdd(float val, coord_t crd){
     coord_t root;
     root = wave.front();
     wave.pop();
+
     for (int sd = 0; sd < SIDE_COUNT; ++sd ){
-      if (mapCanPass(root, sd))
-      {
+      if (mapInside(root, sd)){
         coord_t nd;
         nd.x = root.x + sides[sd].x;
         nd.y = root.y + sides[sd].y;
         object_t& tile = mapObject(nd.x, nd.y);
         if ((dist[root.x + root.y*map.sz.x] + sidecost[sd]) <  dist[nd.x + nd.y*map.sz.x]){
           dist[nd.x + nd.y*map.sz.x] = dist[root.x + root.y*map.sz.x] + sidecost[sd];
-          wave.push(nd);
+          if (mapCanPass(root, sd))
+          {
+            wave.push(nd);
+          }
         }
       }
     }

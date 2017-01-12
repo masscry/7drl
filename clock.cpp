@@ -1,5 +1,6 @@
 #include <time.h>
 
+#ifndef _WIN32
 
 timespec start;
 
@@ -16,3 +17,21 @@ double clockNow(){
     return (temp.tv_sec - start.tv_sec) + (temp.tv_nsec - start.tv_nsec)*1.0e-9;
   }
 }
+
+#else // _WIN32
+
+/**
+ * @todo add WIN32 implementation
+ */
+void clockStart(){
+  ;
+}
+
+/**
+ * @todo add WIN32 implementation
+ */
+double clockNow(){
+  return 0.0;
+}
+
+#endif // _WIN32

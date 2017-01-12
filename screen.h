@@ -12,7 +12,12 @@
 #include <cstdint>
 #include <cstdio>
 #include <clocale>
+
+#ifndef _WIN32
 #include <ncurses.h>
+#else
+#include "curses.h"
+#endif
 
 #include "object.h"
 

@@ -5,7 +5,11 @@
  */
 #pragma once
 
+#ifndef _WIN32
 #include <ncurses.h>
+#else
+#include "curses.h"
+#endif // _WIN32
 
 struct coord_t {
   int x;

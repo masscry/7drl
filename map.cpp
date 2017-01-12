@@ -47,11 +47,6 @@ chtype  grasscol[] = {COLOR_PAIR(CGRASS),
                    COLOR_PAIR(CGRASS),
                    COLOR_PAIR(CWALL)};
 
-static void mapWall(coord_t crd, void*){
-  object_t& cl = mapObject(crd.x,crd.y);
-  cl.smb = '#';
-}
-
 void mapInit(){
   map.sz.x = world.x*2;
   map.sz.y = world.y*2 + 1;
@@ -81,6 +76,14 @@ void mapCleanup(){
   free(map.cl);
 }
 
+bool mapVisible(const coord_t& c, const coord_t& d, float cdist){
+  float co = dist(c, d);
+  if (co > cdist){
+    return false;
+  }
+  return (mapHeat(d.x, d.y) - co) < 0.8;
+}
+
 void mapDraw(const object_t* center, float cdist){
   int fx = min(map.sz.x - map.off.x, world.x + 1);
   int fy = min(map.sz.y - map.off.y, world.y + 1);
@@ -88,11 +91,7 @@ void mapDraw(const object_t* center, float cdist){
   for (int y = 0; y < fy; ++y){
     for (int x = 0; x < fx; ++x){
       object_t& obj = mapObject(x + map.off.x, y + map.off.y);
-      float co = dist(center->pos, obj.pos);
-      //if (co > cdist){
-      //  continue;
-      //}
-      if ( (mapHeat(x + map.off.x, y + map.off.y) - co) >= 0.8f  ){
+      if (!mapVisible(center->pos, obj.pos, cdist)){
         continue;
       }
       mvaddch(y, x, obj.smb | obj.col);
@@ -248,8 +247,12 @@ static bool mapInsideScreen(const coord_t& pos){
          && (pos.y - map.off.y <= world.y);
 }
 
-void mapDrawActors(object_t* act, size_t actlen){
+void mapDrawActors(object_t* act, size_t actlen, float dist){
   for (int i = 0; i < actlen; ++i){
+    if (!mapVisible(act[0].pos, act[i].pos, dist)){
+      continue;
+    }
+
     if (mapInsideScreen(act[i].pos)){
       mvaddch(act[i].pos.y - map.off.y, act[i].pos.x - map.off.x, act[i].smb | act[i].col);
     }

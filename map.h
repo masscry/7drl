@@ -23,7 +23,7 @@ extern map_t map;
 void mapInit();
 void mapCleanup();
 void mapDraw(const object_t* center, float dist);
-void mapDrawActors(object_t* act, size_t actsize);
+void mapDrawActors(object_t* act, size_t actsize, float dist);
 
 object_t& mapObject(int x, int y);
 float& mapHeat(int x, int y);
@@ -49,6 +49,7 @@ enum {
 };
 
 extern coord_t sides[SIDE_COUNT];
+extern float sidecost[SIDE_COUNT];
 
 bool mapInside(const coord_t& crd);
 bool mapCanPass(const coord_t& crd, int sd);

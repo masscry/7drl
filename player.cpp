@@ -25,6 +25,7 @@ int key2side(int key){
 
 int gameMode = GM_WAIT;
 
+extern float stepLength;
 
 bool walkControl(int key, object_t* player){
 
@@ -42,6 +43,7 @@ bool walkControl(int key, object_t* player){
       if (mapCanPass(player->pos, side)){
         player->pos.x += sides[side].x;
         player->pos.y += sides[side].y;
+        stepLength += sidecost[side] ;
       }
       return true;
     }

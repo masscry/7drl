@@ -1,11 +1,14 @@
 #include "screen.h"
 
 #include <cmath>
+#include <ctime>
 
 coord_t world;
 
 void scrInit() {
   setlocale(LC_ALL, "");
+
+  srand(time(0));
 
   initscr();
   cbreak();

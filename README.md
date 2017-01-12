@@ -23,3 +23,8 @@
 ## 9-12 Jan 2017
 
 1. Add simple LOS algorithm
+
+## 12 Jan 2017
+
+1. Add some simple story and task to complete
+2. Final commit

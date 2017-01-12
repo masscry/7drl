@@ -19,3 +19,7 @@
 2. add new action model
 3. simple distance FOV
 4. better error handling
+
+## 9-12 Jan 2017
+
+1. Add simple LOS algorithm
